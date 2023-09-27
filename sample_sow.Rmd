@@ -1,0 +1,64 @@
+---
+title: "Sample Sow"
+output: word_document
+date: "2023-09-27"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, echo=FALSE, include=FALSE}
+
+package_loader <- function(x) {
+  if (x %in% installed.packages()) {
+    library(x, character.only = TRUE)
+  } else {
+    install.packages(x)
+    library(x, character.only = TRUE)
+  }
+}
+
+lapply(c("tidyverse", "googlesheets4"), package_loader)
+```
+
+Pulling the information from google sheets
+```{r, echo=FALSE, include=FALSE}
+# authenticate google sheets
+# gs4_auth()
+
+# get sheet data and turn it into a df
+sheet_url <- "https://docs.google.com/spreadsheets/d/1miAXjWnqgDg3wbi3Rp3NESF2fs7kTE7mQZNEP6qiOMA/edit#gid=2092154335"
+my_sheet <- gs4_get(sheet_url)
+sheet_data <- read_sheet(my_sheet)
+```
+
+Timestamp: `r sheet_data[1,1]`
+
+First name: `r sheet_data[1,2]`
+
+Last name: `r sheet_data[1,3]` 
+
+Org: `r sheet_data[1,3]`  
+
+Email: `r sheet_data[1,5]`  
+
+Funding: `r sheet_data[1,6]`  
+
+Project Name: `r sheet_data[1,7]`  
+
+Project description: `r sheet_data[1,8]`  
+
+Tasks: `r sheet_data[1,9]`  
+
+Deliverables: `r sheet_data[1,10]`  
+
+Time frame: `r sheet_data[1,11]`  
+
+Comments: `r sheet_data[1,12]`  
+
+Amount of funding: `r sheet_data[1,13]`  
+
+Contract required: `r sheet_data[1,14]`  
+
+Phone number: `r sheet_data[1,15]`  
