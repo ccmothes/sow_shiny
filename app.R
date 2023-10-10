@@ -14,7 +14,7 @@ package_loader <- function(x) {
   }
 }
 
-lapply(c("shiny", "tidyverse", "googlesheets4"), package_loader)
+lapply(c("shiny", "tidyverse", "googlesheets4", "DT", "scales"), package_loader)
 
 # connect to scope of work responses via google sheets
 
@@ -28,6 +28,11 @@ client_data <- gs4_get(sheet_url) %>%
   read_sheet() %>% 
   mutate(`Closeout: When does this project need to be completed?` = as.character(`Closeout: When does this project need to be completed?`))
 
+## read in bill rates
+
+rates <- read_csv("billing_rates.csv") %>% 
+  # add empty column to enter hours
+  mutate(hours = 0)
 
 
 # Define UI for application ----------
@@ -96,7 +101,16 @@ ui <- fluidPage(
         
         mainPanel(
           h2("Budget Calculation"),
-          h2("Deliverables Timeline"),
+          
+          h4("Enter # hours for each staff/intern on the project:"),
+          # create editable table to input hours
+          DTOutput("rates_table"),
+          br(),
+          h4(textOutput("total_budget")),
+          hr(),
+          
+          
+          #h2("Deliverables Timeline"),
           downloadButton("generate", "Generate SOW")
         )
         ))
@@ -135,6 +149,63 @@ server <- function(input, output) {
   output$comments <- renderText(selected_cli()$`Other comments or information`)
   
   
+  # create table -----------------------------
+  
+  ## filter rates table based on on or of campus
+  rates_selected <- reactive({
+    if(selected_cli()$`Will financial support for this project come from a CSU account or external funds?` == "On-campus, CSU funding") {
+
+      rates %>%
+        select(-off_campus_rate)
+
+    } else {
+
+      rates %>%
+        select(-on_campus_rate)
+    }
+  })
+  
+  ## create empty reactive values to fill with reactive table
+  v <- reactiveValues(data = NULL)
+  
+  observe({
+    v$data <- rates_selected()
+  })
+  
+  ## render table
+  output$rates_table <- renderDT({
+    DT::datatable(v$data,
+      #rates_selected(), 
+                  editable = TRUE, 
+                  options = list(dom = 't',
+                                 columnDefs = list(list(className = 'dt-center', targets = "_all"))
+                  )
+    )
+    
+  })
+  
+  ## create table proxy
+  proxy = dataTableProxy("rates_table")
+  
+  
+  # when table is edited, write that edit to the data frame
+  observeEvent(input$rates_table_cell_edit, {
+    
+    # get value
+    info = input$rates_table_cell_edit
+    i = as.numeric(info$row)
+    j = as.numeric(info$col)
+    k = as.numeric(info$value)
+    
+    # write values to reactive rates table
+    v$data <- editData(v$data, input$rates_table_cell_edit, 'rates_table')
+    
+    
+    output$total_budget <- renderText(paste0("Total Budget: $", comma(sum(v$data[,2] * v$data[,3]))))
+    
+  })
+  
+                                    
   # render .rmd to produce SOW --------------
   output$generate <- downloadHandler(
     filename = function() {
