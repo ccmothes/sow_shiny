@@ -4,6 +4,7 @@
 # Contributors: Caitlin Mothes (ccmothes) and Juan De La Torre (juandlt-csu)
 
 
+# set up ---------------------------------------------------
 package_loader <- function(x) {
   if (x %in% installed.packages()) {
     library(x, character.only = TRUE)
@@ -24,7 +25,8 @@ gs4_auth(cache=".secrets", email="ccmothes@gmail.com")
 sheet_url <- "https://docs.google.com/spreadsheets/d/1miAXjWnqgDg3wbi3Rp3NESF2fs7kTE7mQZNEP6qiOMA/edit#gid=2092154335"
 
 client_data <- gs4_get(sheet_url) %>%
-  read_sheet()
+  read_sheet() %>% 
+  mutate(`Closeout: When does this project need to be completed?` = as.character(`Closeout: When does this project need to be completed?`))
 
 
 
@@ -40,7 +42,7 @@ ui <- fluidPage(
         sidebarPanel(
           selectInput("client",
                       "Select client:",
-                      choices = pull(client_data, "Last Name")),
+                      choices = pull(client_data, "Name")),
           # Print client name and org
           h4("Client info"),
           strong(textOutput("name")),
@@ -56,18 +58,24 @@ ui <- fluidPage(
           
           
           #print tasks
-          h4("Tasks"),
+          h4("Tasks/Deliverables"),
           textOutput("tasks"),
           br(),
           
-          # print deliverables
-          h4("Deliverables"),
-          textOutput("deliverables"),
+          
+          # print start date
+          h4("Preferred start date:"),
+          textOutput("start"),
           br(),
           
-          # print timeline
-          h4("Project Timeframe:"),
-          textOutput("timeframe"),
+          # print deliverable timeline (if entered)
+          h4("Deliverable timeline (if applicable):"),
+          textOutput("timeline"),
+          br(),
+          
+          # print project end data
+          h4("Project completed by:"),
+          textOutput("end"),
           br(),
           
           # print funding
@@ -101,38 +109,28 @@ server <- function(input, output) {
   
   selected_cli <- reactive({
     client_data %>% 
-      filter(`Last Name` == input$client)
+      filter(`Name` == input$client)
   })
   
   # print all client info to help user develop SOW ---------
-  output$name <- renderText(paste(selected_cli()$`First Name`, selected_cli()$`Last Name`))
+  output$name <- renderText(selected_cli()$`Name`)
   output$org <- renderText(selected_cli()$`Organization, Department, or Affiliation`)
   output$account <- renderText(selected_cli()$`Will financial support for this project come from a CSU account or external funds?`)
   
-  output$title <- renderText(selected_cli()$`General Project Name`)
-  output$description <- renderText(selected_cli()$`General Project Description`)
+  output$title <- renderText(selected_cli()$`Project Name`)
+  output$description <- renderText(selected_cli()$`Project Description`)
   
-  output$tasks <- renderText(selected_cli()$`Tasks to be performed by the Geospatial Centroid`)
+  output$tasks <- renderText(selected_cli()$`Tasks and/or specific deliverables to be performed by the Geospatial Centroid`)
   
-  output$deliverables <- renderText({
-    if(is.na(selected_cli()$`DELIVERABLES (if different from above)`)){
-      "Tasks as stated above"
-    } else{
-      selected_cli()$`DELIVERABLES (if different from above)`
-    }
-             })
+  output$start <- renderText(selected_cli()$`Preferred project start date:`)
   
-  output$timeframe <- renderText(selected_cli()$`Time frame:  When does this project need to be completed?`)
+  output$timeline <- renderText(selected_cli()$`Timeline of deliverables (if applicable)`)
   
-  output$funding <- renderText(selected_cli()$`Amount of funding available for this project, if known`)
+  output$end <- renderText(selected_cli()$`Closeout: When does this project need to be completed?`)
   
-  output$contract <- renderText({
-    if(is.na(selected_cli()$`If you are an off-campus entity, does your organization require a formal contract with CSU?`)){
-      "No"
-    } else {
-      selected_cli()$`If you are an off-campus entity, does your organization require a formal contract with CSU?`
-    }
-  })
+  output$funding <- renderText(selected_cli()$`Amount of funding available for this project (approximate if not known)`)
+  
+  output$contract <- renderText(selected_cli()$`If you are an off-campus entity, does your organization require a formal contract with CSU?`)
   
   output$comments <- renderText(selected_cli()$`Other comments or information`)
   
