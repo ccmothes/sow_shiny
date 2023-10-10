@@ -103,6 +103,7 @@ ui <- fluidPage(
           h2("Budget Calculation"),
           
           h4("Enter # hours for each staff/intern on the project:"),
+          em("double-click on the value in the 'hours' colum to change it"),
           # create editable table to input hours
           DTOutput("rates_table"),
           br(),
@@ -224,7 +225,8 @@ server <- function(input, output) {
         output_format = "word_document",
         output_file = file,
         params = list(
-          filtered_data = selected_cli()
+          filtered_data = selected_cli(),
+          rates_data = v$data
         ),
         envir = new.env(parent = globalenv()),
         clean = F,
