@@ -4,6 +4,7 @@ output:
     reference_docx: "style_reference.docx"
 params:
   filtered_data: NA
+  rates_data: NA
 ---
 
 ```{r setup, include=FALSE}
@@ -13,12 +14,48 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 ```{r data}
 # load in reactive data
 data <- params$filtered_data
+
+rates <- params$rates_data
 ```
 
 ![](CSU-Signature.png)
 
-# Statement of Work: `r data$"General Project Name"`
+# Statement of Work: `r data$"Project Name"`
+
+------------------------------------------------------------------------
 
 ## Project Overview
 
-`r data$"General Project Description"`
+`r data$"Project Description"`
+
+<br>
+
+<br>
+
+**Project Timeline:** `r data$"Preferred project start date:"` - `r data$"Closeout: When does this project need to be completed?"`
+
+<br>
+
+**Tasks and Deliverables**
+
+`r data$"Tasks and/or specific deliverables to be performed by the Geospatial Centroid"`
+
+<br>
+
+**Timeline and Milestones:**
+
+```{r }
+flextable(tibble(Deadline = "placeholder", Deliverable = "placeholder"))
+```
+
+<br>
+
+**Total Staff Hours:**
+
+```{r out.width="80%"}
+rates %>% 
+  filter(hours != 0) %>% 
+  flextable() %>% 
+  autofit() %>% 
+  fit_to_width(7)
+```

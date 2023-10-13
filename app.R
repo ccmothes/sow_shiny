@@ -4,6 +4,7 @@
 # Contributors: Caitlin Mothes (ccmothes) and Juan De La Torre (juandlt-csu)
 
 
+# set up ---------------------------------------------------
 package_loader <- function(x) {
   if (x %in% installed.packages()) {
     library(x, character.only = TRUE)
@@ -13,7 +14,7 @@ package_loader <- function(x) {
   }
 }
 
-lapply(c("shiny", "tidyverse", "googlesheets4"), package_loader)
+lapply(c("shiny", "tidyverse", "googlesheets4", "DT", "scales"), package_loader)
 
 # connect to scope of work responses via google sheets
 
@@ -24,8 +25,14 @@ gs4_auth(cache=".secrets", email="ccmothes@gmail.com")
 sheet_url <- "https://docs.google.com/spreadsheets/d/1miAXjWnqgDg3wbi3Rp3NESF2fs7kTE7mQZNEP6qiOMA/edit#gid=2092154335"
 
 client_data <- gs4_get(sheet_url) %>%
-  read_sheet()
+  read_sheet() %>% 
+  mutate(`Closeout: When does this project need to be completed?` = as.character(`Closeout: When does this project need to be completed?`))
 
+## read in bill rates
+
+rates <- read_csv("billing_rates.csv") %>% 
+  # add empty column to enter hours
+  mutate(hours = 0)
 
 
 # Define UI for application ----------
@@ -40,7 +47,7 @@ ui <- fluidPage(
         sidebarPanel(
           selectInput("client",
                       "Select client:",
-                      choices = pull(client_data, "Last Name")),
+                      choices = pull(client_data, "Name")),
           # Print client name and org
           h4("Client info"),
           strong(textOutput("name")),
@@ -56,18 +63,24 @@ ui <- fluidPage(
           
           
           #print tasks
-          h4("Tasks"),
+          h4("Tasks/Deliverables"),
           textOutput("tasks"),
           br(),
           
-          # print deliverables
-          h4("Deliverables"),
-          textOutput("deliverables"),
+          
+          # print start date
+          h4("Preferred start date:"),
+          textOutput("start"),
           br(),
           
-          # print timeline
-          h4("Project Timeframe:"),
-          textOutput("timeframe"),
+          # print deliverable timeline (if entered)
+          h4("Deliverable timeline (if applicable):"),
+          textOutput("timeline"),
+          br(),
+          
+          # print project end data
+          h4("Project completed by:"),
+          textOutput("end"),
           br(),
           
           # print funding
@@ -88,7 +101,17 @@ ui <- fluidPage(
         
         mainPanel(
           h2("Budget Calculation"),
-          h2("Deliverables Timeline"),
+          
+          h4("Enter # hours for each staff/intern on the project:"),
+          em("double-click on the value in the 'hours' colum to change it"),
+          # create editable table to input hours
+          DTOutput("rates_table"),
+          br(),
+          h4(textOutput("total_budget")),
+          hr(),
+          
+          
+          #h2("Deliverables Timeline"),
           downloadButton("generate", "Generate SOW")
         )
         ))
@@ -101,42 +124,89 @@ server <- function(input, output) {
   
   selected_cli <- reactive({
     client_data %>% 
-      filter(`Last Name` == input$client)
+      filter(`Name` == input$client)
   })
   
   # print all client info to help user develop SOW ---------
-  output$name <- renderText(paste(selected_cli()$`First Name`, selected_cli()$`Last Name`))
+  output$name <- renderText(selected_cli()$`Name`)
   output$org <- renderText(selected_cli()$`Organization, Department, or Affiliation`)
   output$account <- renderText(selected_cli()$`Will financial support for this project come from a CSU account or external funds?`)
   
-  output$title <- renderText(selected_cli()$`General Project Name`)
-  output$description <- renderText(selected_cli()$`General Project Description`)
+  output$title <- renderText(selected_cli()$`Project Name`)
+  output$description <- renderText(selected_cli()$`Project Description`)
   
-  output$tasks <- renderText(selected_cli()$`Tasks to be performed by the Geospatial Centroid`)
+  output$tasks <- renderText(selected_cli()$`Tasks and/or specific deliverables to be performed by the Geospatial Centroid`)
   
-  output$deliverables <- renderText({
-    if(is.na(selected_cli()$`DELIVERABLES (if different from above)`)){
-      "Tasks as stated above"
-    } else{
-      selected_cli()$`DELIVERABLES (if different from above)`
-    }
-             })
+  output$start <- renderText(selected_cli()$`Preferred project start date:`)
   
-  output$timeframe <- renderText(selected_cli()$`Time frame:  When does this project need to be completed?`)
+  output$timeline <- renderText(selected_cli()$`Timeline of deliverables (if applicable)`)
   
-  output$funding <- renderText(selected_cli()$`Amount of funding available for this project, if known`)
+  output$end <- renderText(selected_cli()$`Closeout: When does this project need to be completed?`)
   
-  output$contract <- renderText({
-    if(is.na(selected_cli()$`If you are an off-campus entity, does your organization require a formal contract with CSU?`)){
-      "No"
-    } else {
-      selected_cli()$`If you are an off-campus entity, does your organization require a formal contract with CSU?`
-    }
-  })
+  output$funding <- renderText(selected_cli()$`Amount of funding available for this project (approximate if not known)`)
+  
+  output$contract <- renderText(selected_cli()$`If you are an off-campus entity, does your organization require a formal contract with CSU?`)
   
   output$comments <- renderText(selected_cli()$`Other comments or information`)
   
   
+  # create table -----------------------------
+  
+  ## filter rates table based on on or of campus
+  rates_selected <- reactive({
+    if(selected_cli()$`Will financial support for this project come from a CSU account or external funds?` == "On-campus, CSU funding") {
+
+      rates %>%
+        select(-off_campus_rate)
+
+    } else {
+
+      rates %>%
+        select(-on_campus_rate)
+    }
+  })
+  
+  ## create empty reactive values to fill with reactive table
+  v <- reactiveValues(data = NULL)
+  
+  observe({
+    v$data <- rates_selected()
+  })
+  
+  ## render table
+  output$rates_table <- renderDT({
+    DT::datatable(v$data,
+      #rates_selected(), 
+                  editable = TRUE, 
+                  options = list(dom = 't',
+                                 columnDefs = list(list(className = 'dt-center', targets = "_all"))
+                  )
+    )
+    
+  })
+  
+  ## create table proxy
+  proxy = dataTableProxy("rates_table")
+  
+  
+  # when table is edited, write that edit to the data frame
+  observeEvent(input$rates_table_cell_edit, {
+    
+    # get value
+    info = input$rates_table_cell_edit
+    i = as.numeric(info$row)
+    j = as.numeric(info$col)
+    k = as.numeric(info$value)
+    
+    # write values to reactive rates table
+    v$data <- editData(v$data, input$rates_table_cell_edit, 'rates_table')
+    
+    
+    output$total_budget <- renderText(paste0("Total Budget: $", comma(sum(v$data[,2] * v$data[,3]))))
+    
+  })
+  
+                                    
   # render .rmd to produce SOW --------------
   output$generate <- downloadHandler(
     filename = function() {
@@ -155,7 +225,8 @@ server <- function(input, output) {
         output_format = "word_document",
         output_file = file,
         params = list(
-          filtered_data = selected_cli()
+          filtered_data = selected_cli(),
+          rates_data = v$data
         ),
         envir = new.env(parent = globalenv()),
         clean = F,
