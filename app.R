@@ -14,12 +14,13 @@ package_loader <- function(x) {
   }
 }
 
-lapply(c("shiny", "tidyverse", "googlesheets4", "DT", "scales"), package_loader)
+lapply(c("shiny", "tidyverse", "googlesheets4", "DT", "scales", "flextable"), package_loader)
 
 # connect to scope of work responses via google sheets
 
 ## authenticate google sheets (see google_auth.R for set up)
-gs4_auth(cache=".secrets", email="ccmothes@gmail.com")
+# gs4_auth(cache=".secrets", email="ccmothes@gmail.com")
+gs4_auth(cache=".secrets", email="jdelatorre00@gmail.com")
 
 ## read in sheet as df
 sheet_url <- "https://docs.google.com/spreadsheets/d/1miAXjWnqgDg3wbi3Rp3NESF2fs7kTE7mQZNEP6qiOMA/edit#gid=2092154335"
@@ -107,6 +108,7 @@ ui <- fluidPage(
           # create editable table to input hours
           DTOutput("rates_table"),
           br(),
+          h4(textOutput("total_hours")),
           h4(textOutput("total_budget")),
           hr(),
           
@@ -157,18 +159,23 @@ server <- function(input, output) {
     if(selected_cli()$`Will financial support for this project come from a CSU account or external funds?` == "On-campus, CSU funding") {
 
       rates %>%
-        select(-off_campus_rate)
+        select(-off_campus_rate) %>% 
+        rename(rate = on_campus_rate)
 
     } else {
 
       rates %>%
-        select(-on_campus_rate)
+        select(-on_campus_rate) %>% 
+        rename(rate = off_campus_rate)
     }
   })
   
   ## create empty reactive values to fill with reactive table
+    # Reactive values store data that is reactive
+    # Responds to changes
   v <- reactiveValues(data = NULL)
   
+  # assigns rates_selected() to v$data
   observe({
     v$data <- rates_selected()
   })
@@ -188,7 +195,6 @@ server <- function(input, output) {
   ## create table proxy
   proxy = dataTableProxy("rates_table")
   
-  
   # when table is edited, write that edit to the data frame
   observeEvent(input$rates_table_cell_edit, {
     
@@ -201,8 +207,12 @@ server <- function(input, output) {
     # write values to reactive rates table
     v$data <- editData(v$data, input$rates_table_cell_edit, 'rates_table')
     
+    # setting total_budget_text to global variable so that we can access it with params
+    total_hours_text <<- paste0("Total Staff Hours: ", comma(sum(v$data[,3])))
+    total_budget_text <<- paste0("Total Budget: $", comma(sum(v$data[,2] * v$data[,3])))
     
-    output$total_budget <- renderText(paste0("Total Budget: $", comma(sum(v$data[,2] * v$data[,3]))))
+    output$total_hours <- renderText(total_hours_text)
+    output$total_budget <- renderText(total_budget_text)
     
   })
   
@@ -226,7 +236,9 @@ server <- function(input, output) {
         output_file = file,
         params = list(
           filtered_data = selected_cli(),
-          rates_data = v$data
+          rates_data = v$data,
+          total_hours = total_hours_text,
+          total_budget = total_budget_text
         ),
         envir = new.env(parent = globalenv()),
         clean = F,
