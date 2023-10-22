@@ -5,6 +5,8 @@ output:
 params:
   filtered_data: NA
   rates_data: NA
+  total_hours: NA
+  total_budget: NA
 ---
 
 ```{r setup, include=FALSE}
@@ -16,11 +18,16 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 data <- params$filtered_data
 
 rates <- params$rates_data
+
+total_hours <- params$total_hours
+
+total_budget <- params$total_budget
 ```
 
 ![](CSU-Signature.png)
 
-# Statement of Work: `r data$"Project Name"`
+## Statement of Work: 
+## `r data$"Project Name"`
 
 ------------------------------------------------------------------------
 
@@ -37,25 +44,40 @@ rates <- params$rates_data
 <br>
 
 **Tasks and Deliverables**
-
+<!-- should we ask users to input this information with bullet points in form? -->
 `r data$"Tasks and/or specific deliverables to be performed by the Geospatial Centroid"`
 
 <br>
 
 **Timeline and Milestones:**
 
-```{r }
-flextable(tibble(Deadline = "placeholder", Deliverable = "placeholder"))
+```{r}
+flextable(tibble(Deadline = "placeholder", Deliverable = "placeholder")) %>% 
+  autofit() %>% 
+  fit_to_width(7)
 ```
 
 <br>
 
-**Total Staff Hours:**
+**Staff hour and budget projections:** 
+
+`r total_hours`
+
+`r total_budget`
 
 ```{r out.width="80%"}
 rates %>% 
   filter(hours != 0) %>% 
+  mutate(total = (rate*hours)) %>% 
+  bind_rows(tibble(hours = sum(.$hours), total = sum(.$total))) %>% 
   flextable() %>% 
   autofit() %>% 
   fit_to_width(7)
 ```
+
+<!-- Things missing from Virridy SOW -->
+
+<!-- modes of collaboration -->
+<!-- Total hours by deliverable -->
+<!-- key staff -->
+<!-- invoice schedule -->
