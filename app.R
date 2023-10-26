@@ -33,7 +33,7 @@ client_data <- gs4_get(sheet_url) %>%
 
 rates <- read_csv("billing_rates.csv") %>% 
   # add empty column to enter hours
-  mutate(hours = 0)
+  mutate(Hours = 0)
 
 
 # Define UI for application ----------
@@ -160,13 +160,13 @@ server <- function(input, output) {
 
       rates %>%
         select(-off_campus_rate) %>% 
-        rename(rate = on_campus_rate)
+        rename(Rate = on_campus_rate)
 
     } else {
 
       rates %>%
         select(-on_campus_rate) %>% 
-        rename(rate = off_campus_rate)
+        rename(Rate = off_campus_rate)
     }
   })
   
