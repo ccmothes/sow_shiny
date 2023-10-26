@@ -26,12 +26,13 @@ total_budget <- params$total_budget
 
 ![](CSU-Signature.png)
 
-## Statement of Work: 
-## `r data$"Project Name"`
+# Statement of Work:
+
+# `r data$"Project Name"`
 
 ------------------------------------------------------------------------
 
-## Project Overview
+## **Project Overview**
 
 `r data$"Project Description"`
 
@@ -43,41 +44,78 @@ total_budget <- params$total_budget
 
 <br>
 
-**Tasks and Deliverables**
-<!-- should we ask users to input this information with bullet points in form? -->
+## **Tasks and Deliverables** <!-- should we ask users to input this information with bullet points in form? --> 
+
 `r data$"Tasks and/or specific deliverables to be performed by the Geospatial Centroid"`
 
 <br>
 
-**Timeline and Milestones:**
+### **Modes of communication and collaboration**:
+
+-   
+
+<br>
+
+## **Timeline and Milestones:**
 
 ```{r}
 flextable(tibble(Deadline = "placeholder", Deliverable = "placeholder")) %>% 
-  autofit() %>% 
-  fit_to_width(7)
+  bold(i = 1, part = "header") %>% 
+  border_remove() %>% 
+  hline(part = "all") %>% 
+  width(width = 3.5)
 ```
 
 <br>
 
-**Staff hour and budget projections:** 
+<br>
 
-`r total_hours`
+### Total hours by task:
 
-`r total_budget`
+```{r}
+flextable(tibble(Task = "placeholder", Hours = "placeholder")) %>% 
+  bold(i = 1, part = "header") %>% 
+  border_remove() %>% 
+  hline(part = "all") %>% 
+  width(width = 3)
+```
+
+<br>
+
+## **Staff hour and budget projections:**
+
+<br>
 
 ```{r out.width="80%"}
 rates %>% 
-  filter(hours != 0) %>% 
-  mutate(total = (rate*hours)) %>% 
-  bind_rows(tibble(hours = sum(.$hours), total = sum(.$total))) %>% 
+  filter(Hours != 0) %>% 
+  mutate(Total = (Rate*Hours)) %>% 
+  bind_rows(tibble(Hours = sum(.$Hours), Total = sum(.$total))) %>% 
   flextable() %>% 
-  autofit() %>% 
-  fit_to_width(7)
+  bold(i = 1, part = "header") %>% 
+  border_remove() %>% 
+  hline(part = "all") %>% 
+  width(width = 1)
 ```
 
-<!-- Things missing from Virridy SOW -->
+<br>
 
-<!-- modes of collaboration -->
-<!-- Total hours by deliverable -->
-<!-- key staff -->
-<!-- invoice schedule -->
+## **`r total_hours`**
+
+## **`r total_budget`**
+
+<br>
+
+### **Key Staff:**
+
+<br>
+
+### **Invoice Schedule**
+
+```{r}
+flextable(tibble(Date = "placeholder", Amount = "placeholder")) %>% 
+  bold(i = 1, part = "header") %>% 
+  border_remove() %>% 
+  hline(part = "all") %>% 
+  width(width = 2.5)
+```
