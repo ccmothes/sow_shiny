@@ -19,8 +19,8 @@ lapply(c("shiny", "tidyverse", "googlesheets4", "DT", "scales", "flextable"), pa
 # connect to scope of work responses via google sheets
 
 ## authenticate google sheets (see google_auth.R for set up)
-# gs4_auth(cache=".secrets", email="ccmothes@gmail.com")
-gs4_auth(cache=".secrets", email="jdelatorre00@gmail.com")
+gs4_auth(cache=".secrets", email="ccmothes@gmail.com")
+# gs4_auth(cache=".secrets", email="jdelatorre00@gmail.com")
 
 ## read in sheet as df
 sheet_url <- "https://docs.google.com/spreadsheets/d/1miAXjWnqgDg3wbi3Rp3NESF2fs7kTE7mQZNEP6qiOMA/edit#gid=2092154335"
@@ -104,7 +104,7 @@ ui <- fluidPage(
           h2("Budget Calculation"),
           
           h4("Enter # hours for each staff/intern on the project:"),
-          em("double-click on the value in the 'hours' colum to change it"),
+          em("Double-click on the value in the 'hours' colum to change it"),
           # create editable table to input hours
           DTOutput("rates_table"),
           br(),
@@ -182,12 +182,15 @@ server <- function(input, output) {
   
   ## render table
   output$rates_table <- renderDT({
-    DT::datatable(v$data,
-      #rates_selected(), 
-                  editable = TRUE, 
-                  options = list(dom = 't',
-                                 columnDefs = list(list(className = 'dt-center', targets = "_all"))
-                  )
+    DT::datatable(
+      v$data,
+      #rates_selected(),
+      editable = TRUE,
+      options = list(dom = 't',
+                     columnDefs = list(
+                       list(className = 'dt-center', targets = "_all"),
+                       list(targets = 0, visible = FALSE)
+                     ))
     )
     
   })
