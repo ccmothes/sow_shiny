@@ -19,8 +19,8 @@ lapply(c("shiny", "tidyverse", "googlesheets4", "DT", "scales", "flextable"), pa
 # connect to scope of work responses via google sheets
 
 ## authenticate google sheets (see google_auth.R for set up)
-gs4_auth(cache=".secrets", email="ccmothes@gmail.com")
-# gs4_auth(cache=".secrets", email="jdelatorre00@gmail.com")
+gs4_auth(cache=".secrets", email="csu.centroid.social@gmail.com")
+
 
 ## read in sheet as df
 sheet_url <- "https://docs.google.com/spreadsheets/d/1miAXjWnqgDg3wbi3Rp3NESF2fs7kTE7mQZNEP6qiOMA/edit#gid=2092154335"
