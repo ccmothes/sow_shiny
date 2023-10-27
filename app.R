@@ -5,16 +5,12 @@
 
 
 # set up ---------------------------------------------------
-package_loader <- function(x) {
-  if (x %in% installed.packages()) {
-    library(x, character.only = TRUE)
-  } else {
-    install.packages(x)
-    library(x, character.only = TRUE)
-  }
-}
-
-lapply(c("shiny", "tidyverse", "googlesheets4", "DT", "scales", "flextable"), package_loader)
+library(shiny)
+library(tidyverse)
+library(googlesheets4)
+library(DT)
+library(scales)
+library(flextable)
 
 # connect to scope of work responses via google sheets
 
