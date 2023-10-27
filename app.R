@@ -18,8 +18,8 @@ lapply(c("shiny", "tidyverse", "googlesheets4", "DT", "scales", "flextable"), pa
 
 # connect to scope of work responses via google sheets
 
-## authenticate google sheets (see google_auth.R for set up)
-gs4_auth(cache=".secrets", email="csu.centroid.social@gmail.com")
+## do not need to authenticate since google sheet is public
+gs4_deauth()
 
 
 ## read in sheet as df
