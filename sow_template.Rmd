@@ -44,17 +44,15 @@ total_budget <- params$total_budget
 
 <br>
 
-## **Tasks and Deliverables** <!-- should we ask users to input this information with bullet points in form? --> 
+## **Tasks and Deliverables** 
+
+<!-- should we ask users to input this information with bullet points in form? -->
 
 `r data$"Tasks and/or specific deliverables to be performed by the Geospatial Centroid"`
 
 <br>
 
-### **Modes of communication and collaboration**:
-
--   
-
-<br>
+### 
 
 ## **Timeline and Milestones:**
 
@@ -63,14 +61,14 @@ flextable(tibble(Deadline = "placeholder", Deliverable = "placeholder")) %>%
   bold(i = 1, part = "header") %>% 
   border_remove() %>% 
   hline(part = "all") %>% 
-  width(width = 3.5)
+  width(width = 3)
 ```
 
 <br>
 
 <br>
 
-### Total hours by task:
+## Total hours by task:
 
 ```{r}
 flextable(tibble(Task = "placeholder", Hours = "placeholder")) %>% 
@@ -82,7 +80,7 @@ flextable(tibble(Task = "placeholder", Hours = "placeholder")) %>%
 
 <br>
 
-## **Staff hour and budget projections:**
+## **Total staff hours and budget:**
 
 <br>
 
@@ -90,9 +88,10 @@ flextable(tibble(Task = "placeholder", Hours = "placeholder")) %>%
 rates %>% 
   filter(Hours != 0) %>% 
   mutate(Total = (Rate*Hours)) %>% 
-  bind_rows(tibble(Hours = sum(.$Hours), Total = sum(.$total))) %>% 
+  bind_rows(tibble(Hours = sum(.$Hours), Total = sum(.$Total))) %>% 
   flextable() %>% 
   bold(i = 1, part = "header") %>% 
+  colformat_num(j = c(2,4), prefix = "$") %>% 
   border_remove() %>% 
   hline(part = "all") %>% 
   width(width = 1)
@@ -100,22 +99,34 @@ rates %>%
 
 <br>
 
-## **`r total_hours`**
+## *`r total_hours`*
 
-## **`r total_budget`**
-
-<br>
-
-### **Key Staff:**
+## *`r total_budget`*
 
 <br>
 
-### **Invoice Schedule**
+<br>
+
+## **Invoice Schedule**
 
 ```{r}
-flextable(tibble(Date = "placeholder", Amount = "placeholder")) %>% 
+flextable(tibble(Date = "placeholder", Amount = "placeholder")) %>%    
   bold(i = 1, part = "header") %>% 
-  border_remove() %>% 
-  hline(part = "all") %>% 
+  border_remove() %>%    
+  hline(part = "all") %>%    
   width(width = 2.5)
 ```
+
+<br>
+
+## **Key Staff:**
+
+<br>
+
+## **Modes of communication and collaboration**:
+
+-   Placeholder
+
+<br>
+
+### 
