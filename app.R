@@ -23,7 +23,8 @@ sheet_url <- "https://docs.google.com/spreadsheets/d/1miAXjWnqgDg3wbi3Rp3NESF2fs
 
 client_data <- gs4_get(sheet_url) %>%
   read_sheet() %>% 
-  mutate(`Closeout: When does this project need to be completed?` = as.character(`Closeout: When does this project need to be completed?`))
+  mutate(`Closeout: When does this project need to be completed?` = as.character(`Closeout: When does this project need to be completed?`),
+         `Amount of funding available for this project (approximate if not known)` = as.character(`Amount of funding available for this project (approximate if not known)`))
 
 ## read in bill rates
 

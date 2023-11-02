@@ -44,7 +44,7 @@ total_budget <- params$total_budget
 
 <br>
 
-## **Tasks and Deliverables** 
+## **Tasks and Deliverables**
 
 <!-- should we ask users to input this information with bullet points in form? -->
 
