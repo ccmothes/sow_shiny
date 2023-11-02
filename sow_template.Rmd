@@ -40,7 +40,7 @@ total_budget <- params$total_budget
 
 <br>
 
-**Project Timeline:** `r data$"Preferred project start date:"` - `r data$"Closeout: When does this project need to be completed?"`
+## **Project Timeline:** `r data$"Preferred project start date:"` - `r data$"Closeout: When does this project need to be completed?"`
 
 <br>
 
