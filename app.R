@@ -5,22 +5,18 @@
 
 
 # set up ---------------------------------------------------
-package_loader <- function(x) {
-  if (x %in% installed.packages()) {
-    library(x, character.only = TRUE)
-  } else {
-    install.packages(x)
-    library(x, character.only = TRUE)
-  }
-}
-
-lapply(c("shiny", "tidyverse", "googlesheets4", "DT", "scales", "flextable"), package_loader)
+library(shiny)
+library(tidyverse)
+library(googlesheets4)
+library(DT)
+library(scales)
+library(flextable)
 
 # connect to scope of work responses via google sheets
 
-## authenticate google sheets (see google_auth.R for set up)
-# gs4_auth(cache=".secrets", email="ccmothes@gmail.com")
-gs4_auth(cache=".secrets", email="jdelatorre00@gmail.com")
+## do not need to authenticate since google sheet is public
+gs4_deauth()
+
 
 ## read in sheet as df
 sheet_url <- "https://docs.google.com/spreadsheets/d/1miAXjWnqgDg3wbi3Rp3NESF2fs7kTE7mQZNEP6qiOMA/edit#gid=2092154335"
@@ -33,7 +29,7 @@ client_data <- gs4_get(sheet_url) %>%
 
 rates <- read_csv("billing_rates.csv") %>% 
   # add empty column to enter hours
-  mutate(hours = 0)
+  mutate(Hours = 0)
 
 
 # Define UI for application ----------
@@ -104,7 +100,7 @@ ui <- fluidPage(
           h2("Budget Calculation"),
           
           h4("Enter # hours for each staff/intern on the project:"),
-          em("double-click on the value in the 'hours' colum to change it"),
+          em("Double-click on the value in the 'hours' colum to change it"),
           # create editable table to input hours
           DTOutput("rates_table"),
           br(),
@@ -160,13 +156,13 @@ server <- function(input, output) {
 
       rates %>%
         select(-off_campus_rate) %>% 
-        rename(rate = on_campus_rate)
+        rename(Rate = on_campus_rate)
 
     } else {
 
       rates %>%
         select(-on_campus_rate) %>% 
-        rename(rate = off_campus_rate)
+        rename(Rate = off_campus_rate)
     }
   })
   
@@ -182,12 +178,15 @@ server <- function(input, output) {
   
   ## render table
   output$rates_table <- renderDT({
-    DT::datatable(v$data,
-      #rates_selected(), 
-                  editable = TRUE, 
-                  options = list(dom = 't',
-                                 columnDefs = list(list(className = 'dt-center', targets = "_all"))
-                  )
+    DT::datatable(
+      v$data,
+      #rates_selected(),
+      editable = TRUE,
+      options = list(dom = 't',
+                     columnDefs = list(
+                       list(className = 'dt-center', targets = "_all"),
+                       list(targets = 0, visible = FALSE)
+                     ))
     )
     
   })
