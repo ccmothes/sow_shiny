@@ -12,6 +12,14 @@ library(DT)
 library(scales)
 library(flextable)
 
+# set flextable defaults
+set_flextable_defaults(
+  font.size = 12,
+  font.family = "calibri",
+  font.color = "#000000",
+  border.color = "#A6A6A6"
+)
+
 # connect to scope of work responses via google sheets
 
 ## do not need to authenticate since google sheet is public
@@ -23,7 +31,8 @@ sheet_url <- "https://docs.google.com/spreadsheets/d/1miAXjWnqgDg3wbi3Rp3NESF2fs
 
 client_data <- gs4_get(sheet_url) %>%
   read_sheet() %>% 
-  mutate(`Closeout: When does this project need to be completed?` = as.character(`Closeout: When does this project need to be completed?`))
+  mutate(`Closeout: When does this project need to be completed?` = as.character(`Closeout: When does this project need to be completed?`),
+         `Amount of funding available for this project (approximate if not known)` = as.character(`Amount of funding available for this project (approximate if not known)`))
 
 ## read in bill rates
 
