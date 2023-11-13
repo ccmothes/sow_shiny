@@ -30,12 +30,12 @@ gs4_deauth()
 sheet_url <- "https://docs.google.com/spreadsheets/d/1miAXjWnqgDg3wbi3Rp3NESF2fs7kTE7mQZNEP6qiOMA/edit#gid=2092154335"
 
 client_data <- gs4_get(sheet_url) %>%
-  read_sheet() %>% 
-  mutate(`Closeout: When does this project need to be completed?` = as.character(`Closeout: When does this project need to be completed?`),
-         `Amount of funding available for this project (approximate if not known)` = as.character(`Amount of funding available for this project (approximate if not known)`))
+  read_sheet() %>%
+  # convert everything to character for printing
+  mutate(across(everything(), as.character))
+
 
 ## read in bill rates
-
 rates <- read_csv("billing_rates.csv") %>% 
   # add empty column to enter hours
   mutate(Hours = 0)
